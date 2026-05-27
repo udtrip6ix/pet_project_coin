@@ -128,13 +128,13 @@ services:
       start_period: 5s
     restart: always
 
-  metabase:
-    build:
-      context: .
-      dockerfile: ./metabase/Dockerfile
-    container_name: metabase
-    ports:
-      - "3000:3000"
+  # metabase:
+  #   build:
+  #     context: .
+  #     dockerfile: ./metabase/Dockerfile
+  #   container_name: metabase
+  #   ports:
+  #     - "3000:3000"
 
 
   redis:
