@@ -99,6 +99,23 @@ services:
       - "9000:9000"
       - "9001:9001"
 
+  clickhouse:
+    image: dockerhub.timeweb.cloud/clickhouse/clickhouse-server:25.8
+    container_name: clickhouse
+    ports:
+      - "8123:8123"
+      - "9002:9000" 
+    environment:     
+      - CLICKHOUSE_USER=admin
+      - CLICKHOUSE_PASSWORD=admin_password
+      - CLICKHOUSE_DB=pet_analytics
+    volumes:
+      - ./clickhouse_data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
   postgres_dwh:
     image: postgres:13
     environment:
@@ -111,7 +128,6 @@ services:
       - postgres_dwh_data:/var/lib/postgresql/data
       - ./postgres_dwh/init:/docker-entrypoint-initdb.d # Auto-run SQL scripts on first container start
     restart: always
-
 
   postgres:
     image: postgres:13
@@ -136,6 +152,31 @@ services:
   #   ports:
   #     - "3000:3000"
 
+  spark-master:
+      image: dockerhub.timeweb.cloud/bitnamilegacy/spark:3.5.1
+      container_name: spark-master
+      environment:
+        - SPARK_MODE=master
+        - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      ports:
+        - "8082:8080"
+        - "7077:7077"
+      volumes:
+        - ./apps:/opt/bitnami/spark/apps
+        - ./data:/opt/bitnami/spark/data
+
+  spark-worker:
+    image: dockerhub.timeweb.cloud/bitnamilegacy/spark:3.5.1
+    container_name: spark-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+    depends_on:
+      - spark-master
+    volumes:
+      - ./apps:/opt/bitnami/spark/apps
+      - ./data:/opt/bitnami/spark/data
 
   redis:
     # Redis is limited to 7.2-bookworm due to licencing change
@@ -297,28 +338,6 @@ services:
       - bash
       - -c
       - airflow
-
-  # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
-  # or by explicitly targeted on the command line e.g. docker-compose up flower.
-  # See: https://docs.docker.com/compose/profiles/
-  # flower:
-  #   <<: *airflow-common
-  #   command: celery flower
-  #   profiles:
-  #     - flower
-  #   ports:
-  #     - "5555:5555"
-  #   healthcheck:
-  #     test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 30s
-  #   restart: always
-  #   depends_on:
-  #     <<: *airflow-common-depends-on
-  #     airflow-init:
-  #       condition: service_completed_successfully
 
 volumes:
   postgres-db-volume:

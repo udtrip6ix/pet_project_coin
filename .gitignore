@@ -242,3 +242,9 @@ airflow/logs/
 airflow/plugins/
 airflow/dags/__pycache__/
 logs/
+
+#containers dwh
+# Данные контейнеров (базы данных, хранилища)
+clickhouse_data/
+metabase_data/
+data/
