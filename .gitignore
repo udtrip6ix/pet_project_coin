@@ -216,3 +216,29 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+#minio
+data/
+
+
+
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Docker
+*.pid
+*.log
+
+#project
+
+# MinIO
+data/
+cred.py
+# Airflow
+airflow/logs/
+airflow/plugins/
+airflow/dags/__pycache__/
+logs/
