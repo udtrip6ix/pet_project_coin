@@ -106,9 +106,9 @@ services:
       - "8123:8123"
       - "9002:9000" 
     environment:     
-      - CLICKHOUSE_USER=admin
-      - CLICKHOUSE_PASSWORD=admin_password
-      - CLICKHOUSE_DB=pet_analytics
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER:-admin}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB:-pet_analytics}
     volumes:
       - ./clickhouse_data:/var/lib/clickhouse
     ulimits:
