@@ -153,7 +153,7 @@ services:
   #     - "3000:3000"
 
   spark-master:
-      image: dockerhub.timeweb.cloud/bitnamilegacy/spark:3.5.1
+      image: apache/spark:3.5.0
       container_name: spark-master
       environment:
         - SPARK_MODE=master
@@ -166,7 +166,7 @@ services:
         - ./data:/opt/bitnami/spark/data
 
   spark-worker:
-    image: dockerhub.timeweb.cloud/bitnamilegacy/spark:3.5.1
+    image: apache/spark:3.5.0
     container_name: spark-worker
     environment:
       - SPARK_MODE=worker
