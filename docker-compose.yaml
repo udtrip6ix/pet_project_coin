@@ -153,17 +153,17 @@ services:
   #     - "3000:3000"
 
   spark-master:
-      image: apache/spark:3.5.0
-      container_name: spark-master
-      environment:
-        - SPARK_MODE=master
-        - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      ports:
-        - "8082:8080"
-        - "7077:7077"
-      volumes:
-        - ./apps:/opt/bitnami/spark/apps
-        - ./data:/opt/bitnami/spark/data
+    image: apache/spark:3.5.0
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+    ports:
+      - "8082:8080"
+      - "7077:7077"
+    volumes:
+      - ./apps:/opt/spark/apps
+      - ./data:/opt/spark/data
 
   spark-worker:
     image: apache/spark:3.5.0
@@ -175,8 +175,8 @@ services:
     depends_on:
       - spark-master
     volumes:
-      - ./apps:/opt/bitnami/spark/apps
-      - ./data:/opt/bitnami/spark/data
+      - ./apps:/opt/spark/apps
+      - ./data:/opt/spark/data
 
   redis:
     # Redis is limited to 7.2-bookworm due to licencing change
