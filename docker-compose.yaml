@@ -145,13 +145,11 @@ services:
       start_period: 5s
     restart: always
 
-  # metabase:
-  #   build:
-  #     context: .
-  #     dockerfile: ./metabase/Dockerfile
-  #   container_name: metabase
-  #   ports:
-  #     - "3000:3000"
+  metabase: 
+    image: metabase/metabase:v0.49.13
+    container_name: metabase
+    ports:
+      - "3000:3000"
 
   spark-master:
     image: apache/spark:3.5.0
