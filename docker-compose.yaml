@@ -86,6 +86,8 @@ services:
   spark-master:
     image: apache/spark:3.5.0
     container_name: spark-master
+    restart: always
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --host spark-master
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
@@ -99,10 +101,14 @@ services:
   spark-worker:
     image: apache/spark:3.5.0
     container_name: spark-worker
+    restart: always
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker --host spark-worker spark://spark-master:7077
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
     depends_on:
       - spark-master
     volumes:
