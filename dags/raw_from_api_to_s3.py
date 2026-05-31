@@ -89,15 +89,17 @@ def get_and_transfer_api_data_to_s3(**context):
     con.sql(
         f"""
         COPY (
-            VALUES (
-                '{row["date"]}', 
-                '{row["coin_id"]}', 
-                {row["price_usd"] if row["price_usd"] is not None else 'NULL'}, 
-                {row["market_cap_usd"] if row["market_cap_usd"] is not None else 'NULL'}, 
-                {row["total_volume_usd"] if row["total_volume_usd"] is not None else 'NULL'}
-            )
+            SELECT * FROM (
+                VALUES (
+                    '{row["date"]}', 
+                    '{row["coin_id"]}', 
+                    {row["price_usd"] if row["price_usd"] is not None else 'NULL'}, 
+                    {row["market_cap_usd"] if row["market_cap_usd"] is not None else 'NULL'}, 
+                    {row["total_volume_usd"] if row["total_volume_usd"] is not None else 'NULL'}
+                )
+            ) AS t(date, coin_id, price_usd, market_cap_usd, total_volume_usd)
         ) 
-        TO '{s3_path}' (FORMAT 'PARQUET');
+        TO '{s3_path}' (FORMAT 'PARQUET', OVERWRITE TRUE);
         """
     )
 
