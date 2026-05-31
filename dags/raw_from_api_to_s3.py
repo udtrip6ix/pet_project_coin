@@ -86,7 +86,7 @@ def get_and_transfer_api_data_to_s3(**context):
 
     con.sql("CREATE TABLE temp_coin AS SELECT * FROM row")
 
-    s3_path= f"s3://prod/raw/coingecko/{COIN_ID}/{target_date}.parquet"
+    s3_path= f"s3://raw/coingecko/{COIN_ID}/{target_date}.parquet"
 
     logging.info(f"saving data to {s3_path}")
     con.sql(f"COPY temp_coin TO '{s3_path}' (FORMAT 'PARQUET')")
