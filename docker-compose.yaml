@@ -28,6 +28,8 @@ x-airflow-common:
       condition: service_healthy
     postgres:
       condition: service_healthy
+  networks:
+    - pet-project-network
 
 x-spark-common: &spark-common
   image: apache/spark:3.5.0
@@ -49,6 +51,8 @@ services:
     ports:
       - "9000:9000"
       - "9001:9001"
+    networks:
+    - pet-project-network
 
   clickhouse:
     image: dockerhub.timeweb.cloud/clickhouse/clickhouse-server:25.8
@@ -63,19 +67,23 @@ services:
       - CLICKHOUSE_DB=${CLICKHOUSE_DB:-pet_analytics}
     volumes:
       - ./clickhouse_data:/var/lib/clickhouse
+    networks:
+    - pet-project-network
 
-  postgres_dwh:
-    image: postgres:13
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    ports:
-      - "5433:5432"
-    volumes:
-      - ./postgres_dwh_data:/var/lib/postgresql/data
-      - ./postgres_dwh/init:/docker-entrypoint-initdb.d
+  # postgres_dwh:
+  #   image: postgres:13
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: postgres
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - ./postgres_dwh_data:/var/lib/postgresql/data
+  #     - ./postgres_dwh/init:/docker-entrypoint-initdb.d
+  #   networks:
+  #   - pet-project-network
 
   postgres:
     image: postgres:13
@@ -90,6 +98,8 @@ services:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
       retries: 5
+    networks:
+    - pet-project-network
 
 
   spark-master:
@@ -125,6 +135,8 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       retries: 5
+    networks:
+    - pet-project-network
 
   metabase: 
     image: metabase/metabase:v0.49.13
@@ -132,6 +144,8 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    networks:
+    - pet-project-network
 
   airflow-webserver:
     <<: *airflow-common
