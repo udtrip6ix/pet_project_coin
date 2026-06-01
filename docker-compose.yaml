@@ -29,6 +29,13 @@ x-airflow-common:
     postgres:
       condition: service_healthy
 
+x-spark-common: &spark-common
+  image: apache/spark:3.5.0
+  volumes:
+    - ./apps:/opt/spark/apps
+  networks:
+    - pet-project-network
+
 services:
   minio:
     image: minio/minio:RELEASE.2025-02-18T16-25-55Z
@@ -84,27 +91,22 @@ services:
       interval: 10s
       retries: 5
 
-  spark-master:
-    image: apache/spark:3.5.0
-    container_name: spark-master
-    restart: always
 
+  spark-master:
+    <<: *spark-common
+    container_name: spark-master
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --host spark-master
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
-
       - SPARK_PUBLIC_DNS=spark-master 
     ports:
       - "8082:8080"
       - "7077:7077"
-    volumes:
-      - ./apps:/opt/spark/apps
 
   spark-worker:
-    image: apache/spark:3.5.0
+    <<: *spark-common
     container_name: spark-worker
-    restart: always
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker --host spark-worker spark://spark-master:7077
     environment:
       - SPARK_MODE=worker
@@ -112,8 +114,6 @@ services:
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
     depends_on:
       - spark-master
-    volumes:
-      - ./apps:/opt/spark/apps
         
 
   redis:
@@ -182,3 +182,7 @@ services:
 
 volumes:
   postgres-db-volume:
+
+networks:
+  pet-project-network:
+    driver: bridge
