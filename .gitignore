@@ -228,6 +228,7 @@ __pycache__/
 *.pyc
 .env
 
+
 # Docker
 *.pid
 *.log
@@ -253,4 +254,7 @@ logs/
 .env
 
 #
+.git
+.gitattributes
 test_dag_v2.py
+*.pyo

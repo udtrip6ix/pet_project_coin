@@ -20,6 +20,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/sql:/opt/airflow/sql
+    - ${AIRFLOW_PROJ_DIR:-.}/apps:/opt/spark/apps
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -87,16 +88,18 @@ services:
     image: apache/spark:3.5.0
     container_name: spark-master
     restart: always
+
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --host spark-master
     environment:
       - SPARK_MODE=master
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
+
+      - SPARK_PUBLIC_DNS=spark-master 
     ports:
       - "8082:8080"
       - "7077:7077"
     volumes:
       - ./apps:/opt/spark/apps
-      - ./data:/opt/spark/data
 
   spark-worker:
     image: apache/spark:3.5.0
@@ -107,13 +110,11 @@ services:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_WORKER_MEMORY=2G
-      - SPARK_WORKER_CORES=2
     depends_on:
       - spark-master
     volumes:
       - ./apps:/opt/spark/apps
-      - ./data:/opt/spark/data
+        
 
   redis:
     image: redis:7.2-bookworm
