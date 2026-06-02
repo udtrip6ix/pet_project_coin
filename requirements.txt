@@ -1,5 +1,5 @@
 apache-airflow==2.10.5
 duckdb==1.2.2
 airflow-clickhouse-plugin==1.4.0
-pyspark==3.5.0
 apache-airflow-providers-apache-spark==3.0.0
+clickhouse-connect

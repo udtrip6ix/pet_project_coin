@@ -1,39 +1,65 @@
-# pet_project_coin
-pet_project_coin
+1. Запуск проекта
+Сначала соберите контейнеры и запустите сервисы:
+
+# Сборка образов
+docker-compose build
+
+# Запуск в фоновом режиме
+docker-compose up -d
+
+2. Создание пользователя Airflow
+После запуска контейнеров необходимо создать администратора Airflow, чтобы получить доступ к панели управления:
+
+docker exec -it pet_project_coin-airflow-webserver-1 airflow users create \
+    --username airflow \
+    --firstname Airflow \
+    --lastname User \
+    --role Admin \
+    --email admin@example.com \
+    --password airflow
 
 
-# Docker Compose Reference Guide
+3. Настройка Airflow (Admin Panel)
+После того как вы залогинитесь в Airflow (http://localhost:8080), необходимо настроить переменные и подключения.
 
-> **Важно:** При первом развертывании проекта на новой машине необходимо **обязательно один раз запустить сборку** образов командой `docker compose build` перед тем, как поднимать контейнеры. Это нужно, чтобы Docker зашил плагин ClickHouse внутрь Airflow.
+    3.1. Variables (Admin -> Variables)
+    Создайте следующие переменные:
 
-### Запуск проекта
 
-* **`docker compose up -d`** Запускает все сервисы, описанные в `docker-compose.yaml`, в фоновом режиме (флаг `-d` / detached). Контейнеры продолжают работать после закрытия терминала. Если конфигурация в файле изменилась, Docker автоматически пересоздаст измененные контейнеры при следующем запуске.
+    access_key  : [ВАШ_ACCESS_KEY_ИЗ_MINIO]
+    secret_key  : [ВАШ_SECRET_KEY_ИЗ_MINIO]
+    ch_user     : admin
+    ch_password : [ВАШ_ПАРОЛЬ_CLICKHOUSE]
 
-### Остановка проекта
 
-* **`docker compose down`** Полностью останавливает и удаляет контейнеры проекта, а также изолированные сети, которые были для них созданы. Данные в базах данных (Postgres, ClickHouse), подключенные через локальные папки (`volumes`), при этом сохраняются.
 
-* **`docker compose down -v`** Останавливает проект и удаляет контейнеры, сети, а также полностью стирает все связанные именованные хранилища (флаг `-v` / volumes). Очищает базы данных до исходного состояния, уничтожая все сохраненные данные.
+     Как получить ключи для S3 (MinIO):
+    Перейдите в консоль MinIO (обычно http://localhost:9001), откройте раздел Access Keys, нажмите Create access key и скопируйте полученные значения в соответствующие переменные Airflow.
 
-### Сборка образов
+    3.2. Connections (Admin -> Connections)
 
-* **`docker compose build`** Сканирует проект на наличие файлов `Dockerfile` и собирает кастомные образы (например, вшивает плагины внутрь базового образа Airflow). Команду необходимо выполнять каждый раз после внесения изменений в `Dockerfile` или при первом клонировании проекта на новую машину.
 
-* **`docker compose build --no-cache`** Запускает сборку образов с нуля, полностью игнорируя сохраненные слои предыдущих сборок (кэш). Используется для принудительного обновления пакетов или при возникновении конфликтов кэширования в Docker.
+    ClickHouse (clickhouse_default)
+    {
+    "Connection Id": "clickhouse_default",
+    "Connection Type": "Generic",
+    "Host": "clickhouse",
+    "Schema": "pet_analytics",
+    "Login": "admin",
+    "Password": "[ВАШ_ПАРОЛЬ_CLICKHOUSE]",
+    "Port": 8123
+    }
 
-### Управление состоянием
+    Spark (spark_default)
+    {
+    "Connection Id": "spark_default",
+    "Connection Type": "Spark",
+    "Host": "spark://spark-master",
+    "Port": 7077,
+    "Extra": {
+        "spark-submit-options": "--master spark://spark-master:7077 --deploy-mode client"
+        }
+    }
 
-* **`docker compose start`** Запускает ранее остановленные контейнеры без их пересоздания или обновления конфигурации.
-
-* **`docker compose stop`** Останавливает процессы внутри контейнеров (ставит на паузу), но не удаляет их и внутренние сети.
-
-### Мониторинг и отладка
-
-* **`docker compose ps`** Выводит список всех контейнеров проекта, показывает их текущий статус (Up, Exited) и проброшенные порты.
-
-* **`docker compose logs`** Выводит логи всех контейнеров проекта в текущий терминал.
-
-* **`docker compose logs -f [имя_сервиса]`** Показывает логи конкретного контейнера (например, `airflow-scheduler`) в реальном времени. Выход из режима просмотра — `Ctrl + C`.
-
-* **`docker compose exec [имя_сервиса] [команда]`** Выполняет команду внутри запущенного контейнера. Например, `docker compose exec airflow-worker pip show airflow-clickhouse-plugin` позволяет проверить установленные пакеты внутри работающего воркера Airflow.
+4. Настройка Metabase
+Для визуализации данных перейдите в Metabase (http://localhost:3000).
