@@ -49,7 +49,8 @@ services:
              mkdir -p /jars &&
              [ ! -f /jars/clickhouse-spark-runtime.jar ] && curl -L https://repo1.maven.org/maven2/com/clickhouse/spark/clickhouse-spark-runtime-3.5_2.12/0.10.0/clickhouse-spark-runtime-3.5_2.12-0.10.0.jar -o /jars/clickhouse-spark-runtime.jar;
              [ ! -f /jars/hadoop-aws-3.3.4.jar ] && curl -L https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar -o /jars/hadoop-aws-3.3.4.jar;
-             [ ! -f /jars/aws-java-sdk-bundle-1.12.262.jar ] && curl -L https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar -o /jars/aws-java-sdk-bundle-1.12.262.jar"
+             [ ! -f /jars/aws-java-sdk-bundle-1.12.262.jar ] && curl -L https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar -o /jars/aws-java-sdk-bundle-1.12.262.jar;
+             [ ! -f /jars/clickhouse-jdbc.jar ] && curl -L https://repo1.maven.org/maven2/com/clickhouse/clickhouse-jdbc/0.6.3/clickhouse-jdbc-0.6.3-all.jar -o /jars/clickhouse-jdbc.jar"
     volumes:
       - ./jars:/jars
     networks:

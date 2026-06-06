@@ -8,7 +8,6 @@ from airflow.models import Variable
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 
-
 OWNER = "ud"
 DAG_ID = "binance_to_s3_parquet"
 LAYER = "raw"
@@ -19,7 +18,7 @@ SECRET_KEY = Variable.get("secret_key")
 
 default_args = {
     "owner": OWNER,
-    "start_date": pendulum.datetime(2026, 5, 20, tz="Europe/Moscow"),
+    "start_date": pendulum.datetime(2026, 5, 20, tz="UTC"),
     "retries": 3,
     "retry_delay": pendulum.duration(minutes=30),
 }
@@ -28,13 +27,11 @@ def get_and_transfer_api_data_to_s3(**context):
     SYMBOL = "BTCUSDT"
     INTERVAL = "1m"
     
-
     ds = context["data_interval_start"]
     target_date = ds.format("YYYY-MM-DD")
     
     logging.info(f"Start load Binance data for {target_date}")
     
-
     start_ts = int(ds.start_of('day').timestamp() * 1000)
     end_ts = int(ds.end_of('day').timestamp() * 1000)
 
@@ -55,10 +52,16 @@ def get_and_transfer_api_data_to_s3(**context):
         logging.warning(f"No data received for {target_date}")
         return
 
+
     df = pd.DataFrame(data, columns=[
         'open_time', 'open', 'high', 'low', 'close', 'volume', 
         'close_time', 'qav', 'num_trades', 'taker_base', 'taker_quote', 'ignore'
     ])
+
+
+    cols_to_numeric = ['open_time', 'open', 'high', 'low', 'close', 'volume']
+    for col in cols_to_numeric:
+        df[col] = pd.to_numeric(df[col])
 
     con = duckdb.connect(database=":memory:")
     con.sql(f"""
@@ -76,16 +79,16 @@ def get_and_transfer_api_data_to_s3(**context):
 
     logging.info(f"Saving {len(df)} rows to {s3_path}")
     
+
     con.sql(f"""
         COPY (
             SELECT 
-                open_time::BIGINT,
-                open::DOUBLE,
-                high::DOUBLE,
-                low::DOUBLE,
-                close::DOUBLE,
-                volume::DOUBLE,
-                close_time::BIGINT
+                to_timestamp(open_time / 1000) AS open_time,
+                open::DOUBLE AS open,
+                high::DOUBLE AS high,
+                low::DOUBLE AS low,
+                close::DOUBLE AS close,
+                volume::DOUBLE AS volume
             FROM candles_df
         ) TO '{s3_path}' (FORMAT 'PARQUET', OVERWRITE TRUE);
     """)
@@ -96,7 +99,7 @@ def get_and_transfer_api_data_to_s3(**context):
 with DAG(
     dag_id=DAG_ID,
     default_args=default_args,
-    schedule_interval="@daily",
+    schedule_interval="0 5 * * *",
     catchup=True,
     max_active_runs=1,
     tags=[LAYER, SOURCE]
